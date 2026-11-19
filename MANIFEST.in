@@ -1,0 +1,6 @@
+include SKILL.md
+include .gitignore
+include examples/perfume/storyboard.csv
+recursive-include tests *.py
+prune _internal
+prune .work

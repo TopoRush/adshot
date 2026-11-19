@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "adshot"
+version = "0.1.0"
+description = "Storyboard, price, render, and revise product ads shot by shot."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+dependencies = ["tomli>=2; python_version < '3.11'"]
+
+[project.scripts]
+adshot = "adshot.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["adshot"]
+include-package-data = false
+
+[tool.setuptools.package-data]
+adshot = ["perfume.csv"]
+
+[tool.setuptools.data-files]
+"share/adshot" = ["SKILL.md"]
+"share/adshot/examples/perfume" = ["examples/perfume/storyboard.csv"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
