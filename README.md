@@ -2,6 +2,10 @@
 
 Turn a product photograph and a brief into a shot list, see the estimated video cost, and render a short ad. Each row in the storyboard has a stable ID. Edit the camera move in S03 and the next run prices and renders S03 while reusing the other shots.
 
+**See it in action:** a real Claude Code session that turns one product photo into a 16-second ad for $1.58 in model cost, including one redo: <https://toporush.com/adshot/>
+
+**Get a key:** adshot defaults to [OpenLux](https://www.openlux.ai), one key for Seedance and other video models. Any compatible endpoint works; see [Providers, models, and prices](#providers-models-and-prices).
+
 ## Try it offline
 
 Run these commands from the repository with Python 3.10 or newer.
