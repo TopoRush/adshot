@@ -1,5 +1,9 @@
 # adshot
 
+[![Six product ads made with adshot: skincare, jewelry, coffee, pet, candle, earbuds](docs/examples.jpg)](https://toporush.com/adshot/#work)
+
+*Six 16-second ads made with adshot, about $1.25 of model cost each. [Watch them](https://toporush.com/adshot/#work). Brands are fictional.*
+
 Turn a product photograph and a brief into a shot list, see the estimated video cost, and render a short ad. Each row in the storyboard has a stable ID. Edit the camera move in S03 and the next run prices and renders S03 while reusing the other shots.
 
 **See it in action:** a real Claude Code session that turns one product photo into a 16-second ad for $1.58 in model cost, including one redo: <https://toporush.com/adshot/>
