@@ -9,7 +9,7 @@ from decimal import Decimal
 from threading import Event
 
 from .estimate import quote, show_estimate, token_cost, token_estimate
-from .providers import ProviderError, VideoProvider
+from .providers import ProviderError, RejectedSubmission, VideoProvider
 from .storyboard import image_reference
 
 
@@ -94,6 +94,10 @@ def _submit(manifest, config, shot, provider, stop):
         raise RuntimeError("Interrupted before submission.")
     try:
         task_id = provider.submit(shot, image_url)
+    except RejectedSubmission as exc:
+        # Drop the intent. A shot under reconciliation returns to that hold.
+        manifest.discard_unsent_intent(shot.shot_id)
+        raise RuntimeError(str(exc)) from None
     except Exception as exc:
         manifest.record(shot.shot_id, state="needs_reconcile")
         # Only ProviderError is known to omit signed URLs, bodies, and credentials.

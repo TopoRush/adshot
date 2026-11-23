@@ -16,6 +16,10 @@ class ProviderError(RuntimeError):
     """A provider request failed. The exception omits keys and signed URLs."""
 
 
+class RejectedSubmission(ProviderError):
+    """The provider refused the key or the account before creating a task."""
+
+
 class _TransientProviderError(ProviderError):
     """A transport or server failure that permits retrying a read-only poll."""
 
@@ -63,7 +67,9 @@ def json_request(url: str, key: str, payload: dict | None = None) -> dict:
     except error.HTTPError as exc:
         exc.close()
         failure = _TransientProviderError if 500 <= exc.code < 600 else ProviderError
-        raise failure(f"Provider returned HTTP {exc.code}.") from None
+        refusal = failure(f"Provider returned HTTP {exc.code}.")
+        refusal.status = exc.code
+        raise refusal from None
     except (OSError, http.client.HTTPException):
         raise _TransientProviderError("Provider connection failed.") from None
     except ValueError:
@@ -71,6 +77,13 @@ def json_request(url: str, key: str, payload: dict | None = None) -> dict:
     if not isinstance(result, dict):
         raise ProviderError("Expected a JSON object in the provider response.")
     return result
+
+
+REFUSALS = {
+    401: "Check that ADSHOT_API_KEY is valid for this endpoint.",
+    402: "Check the account balance at your provider.",
+    403: "Check the account balance and that the key may use this model.",
+}
 
 
 class VideoProvider:
@@ -86,11 +99,23 @@ class VideoProvider:
             content.append({
                 "type": "image_url", "image_url": {"url": image_url}, "role": "first_frame",
             })
-        result = json_request(self.endpoint, api_key("ADSHOT_API_KEY"), {
-            "model": shot.model, "content": content, "resolution": shot.resolution,
-            "ratio": shot.ratio, "duration": shot.seconds,
-            "generate_audio": False, "watermark": False,
-        })
+        try:
+            result = json_request(self.endpoint, api_key("ADSHOT_API_KEY"), {
+                "model": shot.model, "content": content, "resolution": shot.resolution,
+                "ratio": shot.ratio, "duration": shot.seconds,
+                "generate_audio": False, "watermark": False,
+            })
+        except ProviderError as exc:
+            # 401, 402 and 403 refuse the key or the account. Providers and
+            # prepaid gateways check both before creating a task. Other failures
+            # leave the outcome unknown.
+            status = getattr(exc, "status", None)
+            if status in REFUSALS:
+                raise RejectedSubmission(
+                    f"Provider refused the request with HTTP {status} before creating a task. "
+                    f"{REFUSALS[status]} If your provider's task history does show this shot, "
+                    "do not run it again.") from None
+            raise
         for field in ("id", "task_id"):
             task_id = result.get(field)
             if isinstance(task_id, str) and task_id.strip():

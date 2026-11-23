@@ -251,3 +251,29 @@ def test_planner_prompt_range_matches_validated_durations(wire, tmp_path, planne
     for seconds in (low - 1, high + 1):
         with pytest.raises(ValueError, match="duration"):
             _validated_shots(reply(seconds), 1, seconds)
+
+
+@pytest.mark.parametrize("status, refused", [(401, True), (402, True), (403, True),
+                                             (400, False), (404, False), (429, False), (500, False)])
+def test_only_key_and_balance_refusals_count_as_not_submitted(wire, status, refused):
+    from types import SimpleNamespace
+    from adshot.providers import ProviderError, RejectedSubmission, VideoProvider
+
+    calls, replies = wire
+    replies.append(error.HTTPError("https://video.example", status, "test-video-key", {},
+                                   io.BytesIO(b"test-video-key")))
+    shot = SimpleNamespace(prompt="p", model="m", resolution="720p", ratio="9:16", seconds=4)
+    with pytest.raises(ProviderError) as exc:
+        VideoProvider("https://video.example").submit(shot, None)
+    assert isinstance(exc.value, RejectedSubmission) is refused
+    assert "test-video-key" not in str(exc.value) and len(calls) == 1
+
+
+def test_poll_refusal_is_not_a_rejected_submission(wire):
+    from adshot.providers import ProviderError, RejectedSubmission, VideoProvider
+
+    calls, replies = wire
+    replies.append(error.HTTPError("https://video.example", 403, "", {}, io.BytesIO(b"")))
+    with pytest.raises(ProviderError) as exc:
+        VideoProvider("https://video.example").poll("task_1")
+    assert not isinstance(exc.value, RejectedSubmission)

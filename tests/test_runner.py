@@ -525,3 +525,23 @@ def test_abandon_done_shot_with_missing_local_video_and_expired_url(project, mon
     assert latest("S03")["state"] == "failed" and latest("S03")["task_id"] == task
     assert len(receipts()) == 1
     assert invoke(*args)[0] == 0 and len(receipts()) == 2
+
+
+def test_refused_submission_is_not_held_for_reconcile(project, monkeypatch):
+    """A refusal of the key or balance creates no task, so a plain rerun is safe."""
+    from adshot.providers import RejectedSubmission
+
+    def refused(*_):
+        raise RejectedSubmission("Provider refused the request with HTTP 403 before creating a task.")
+
+    original = OfflineVideo.submit
+    monkeypatch.setattr(OfflineVideo, "submit", refused)
+    code, output = invoke("run", "--only", "S02", "--yes")
+    assert code != 0 and "before creating a task" in output and "reconcile" not in output
+    assert not receipts()
+    status = invoke("status")[1]
+    assert "needs_reconcile" not in status and "unknown" not in status and "failed" not in status
+    assert "submit" in invoke("estimate", "--only", "S02")[1]
+    monkeypatch.setattr(OfflineVideo, "submit", original)
+    assert invoke("run", "--only", "S02", "--yes")[0] == 0
+    assert len(receipts()) == 1

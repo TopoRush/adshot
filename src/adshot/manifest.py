@@ -124,7 +124,7 @@ class Manifest:
             return attempts[-1]
 
     def discard_unsent_intent(self, shot_id):
-        """Undo the caller's intent while it still holds the claim and has sent no POST."""
+        """Undo the caller's intent while it holds the claim and no task was created."""
         with file_guard(self.private / "manifest.guard", wait=True):
             document = self._read()
             attempts = document["shots"][shot_id]
