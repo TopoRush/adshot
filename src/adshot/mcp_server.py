@@ -269,7 +269,7 @@ def stitch(project_dir: str, out: str = "ad.mp4") -> str:
     """
     root = _project(project_dir)
     name = Path(out)
-    if name.name != out or name.suffix.lower() != ".mp4":
+    if name.name != out or set(out) & set('\/:') or name.suffix.lower() != ".mp4":
         raise AdshotError("out must be an .mp4 file name inside the project.")
     return _cli(root, "stitch", "--out", out)
 
