@@ -35,7 +35,7 @@ adshot also runs as an MCP server, so Claude Desktop, Cursor, and other MCP clie
   "mcpServers": {
     "adshot": {
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/TopoRush/adshot", "adshot", "mcp"],
+      "args": ["adshot", "mcp"],
       "env": { "ADSHOT_API_KEY": "your video provider key" }
     }
   }
