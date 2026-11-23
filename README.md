@@ -26,6 +26,33 @@ The starter project contains four 4-second perfume shots, totaling 16 seconds. W
 
 To use the agent skill, point your coding agent at this repository's `SKILL.md` and give it the brief and image path. The wheel also installs the skill under `share/adshot/SKILL.md` in the Python environment.
 
+## Use it from an MCP client
+
+adshot also runs as an MCP server, so Claude Desktop, Cursor, and other MCP clients can make the ad without a terminal. Add this to the client's MCP configuration:
+
+```json
+{
+  "mcpServers": {
+    "adshot": {
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/TopoRush/adshot", "adshot", "mcp"],
+      "env": { "ADSHOT_API_KEY": "your video provider key" }
+    }
+  }
+}
+```
+
+The server offers seven tools: `init_project`, `get_storyboard`, `set_storyboard`, `estimate`, `render`, `status`, and `stitch`. They run the same commands described below, on a project folder you name by absolute path.
+
+- `estimate` and `set_storyboard` return the price and spend nothing. They work without a key.
+- `render` takes `approved_usd` and refuses to start if the current estimate is higher. Pass the total the user agreed to. It can never exceed `budget_usd` in `adshot.toml`, and no tool edits that file.
+- `render` returns at once and works in the background. `status` shows progress. If the client closes mid-render, the saved task IDs let the next `render` resume the same jobs. A shot interrupted in the instant of submission is held as `needs_reconcile` and is not sent again.
+- Resolving an uncertain submission (`run --reconcile`) and `abandon` stay on the command line, because each needs a person to check the provider's task history first.
+
+Stitching needs FFmpeg on PATH, as in the command-line flow.
+
+<!-- mcp-name: io.github.TopoRush/adshot -->
+
 ## Make an ad
 
 1. Put a product image in the project. Write the rows yourself or have Claude Code, Codex, or OpenCode follow the agent instructions. For a reference ad, inspect the cuts and movement, then describe the shot sequence in the CSV. Use a product photo or an extracted still as the first frame where appropriate. [Agent skill](SKILL.md)

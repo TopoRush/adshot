@@ -1,0 +1,37 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.TopoRush/adshot",
+  "title": "adshot",
+  "description": "Turn a product photo into a short ad video, shot by shot: quote the cost first, redo one shot.",
+  "version": "0.2.0",
+  "repository": {
+    "url": "https://github.com/TopoRush/adshot",
+    "source": "github"
+  },
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
+      "identifier": "adshot",
+      "version": "0.2.0",
+      "runtimeHint": "uvx",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "mcp"
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "ADSHOT_API_KEY",
+          "description": "Key for the video provider set in the project's adshot.toml (OpenLux by default, or any Ark-compatible endpoint). Needed only for render.",
+          "isRequired": false,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}

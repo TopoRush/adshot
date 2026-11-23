@@ -40,11 +40,16 @@ def parser():
     drop.add_argument("--confirm", metavar="RETRY", help="Confirm that a future run may charge again")
     join = commands.add_parser("stitch", help="Join the current shots in storyboard order")
     join.add_argument("--out", type=Path, default=Path("ad.mp4"))
+    commands.add_parser("mcp", help="Serve adshot to an MCP client over stdio")
     return cli
 
 
 def _dispatch(args):
     root = Path.cwd()
+    if args.command == "mcp":
+        from .mcp_server import main as serve
+        serve()
+        return 0
     if args.command == "init":
         init_project(args.dir)
         print(f"Created {args.dir.resolve()}. Run adshot estimate from that directory.")
